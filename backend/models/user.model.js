@@ -12,6 +12,7 @@ const userSchema = mongoose.Schema({
     password: { type: String, required: true },
     firstname: { type: String, required: true },
     lastname: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
     roles: [{ type: String, enum: ['PARTICIPANT', 'ORGANIZER', 'ADMIN']}],
     status: { type: String, enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
     avatar: String,
