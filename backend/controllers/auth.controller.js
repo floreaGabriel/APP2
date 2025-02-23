@@ -4,13 +4,14 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export const signup =  async (req, res) => {
+    console.log('signup');
     try {
         const user = req.body;
-
+        console.log(user);
         if ( !user.email ||  !user.password ||  !user.firstname ||  !user.lastname ||  !user.roles ||  !user.status || !user.username) {
             return res.status(400).json({ succes: false,  message: 'Please fill in all fields' });
         }
-
+        
         const existingUsername = await User.findOne({ username: user.username });
         if (existingUsername) {
             return res.status(400).json({ success: false, message: 'Username already in use' });
@@ -24,6 +25,8 @@ export const signup =  async (req, res) => {
         if (user.password.length < 8) {
             return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
         }
+
+
         // hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash (user.password, salt);
@@ -60,12 +63,14 @@ export const logout = async (req,res) => {
 
 export const login = async (req, res) => { 
     try {
-        const { username, password: userPassword } = req.body;
-        const user = await User.findOne({ username });
+        console.log('login');
+        const { email, password: userPassword } = req.body;
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ success: false, message: 'Invalid credentials' });
         }
-
+        //console.log('exista ', user);
+        
         const isPasswordCorrect = await bcrypt.compare(userPassword, user.password);
         if (!isPasswordCorrect) {
             return res.status(400).json({ success: false, message: 'Invalid credentials' });
