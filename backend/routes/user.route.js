@@ -1,8 +1,10 @@
 import express from "express";
 import { protectRoute } from "../middleware/protectRoute.js";
-const Router = express.Router();
+import { getUserDashboard } from "../controllers/user.controller.js";
+
+const router = express.Router();
 
 
-//router.get("/profile/:username", getUserProfile);
+//router.get("/dashboard", protectRoute , getUserDashboard);
 
-export default Router;
+export default router;

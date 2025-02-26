@@ -52,40 +52,56 @@ export const signup =  async (req, res) => {
     }
 };
 
-export const logout = async (req,res) => {
+export const logout = async (req, res) => {
     try {
-        res.cookie('jwt', '', { maxAge: 0 });
+        console.log('Șterg cookies-ul token...');
+        res.clearCookie('token', { maxAge: 0, httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV !== 'development' });
         res.status(200).json({ success: true, message: 'User logged out successfully' });
     } catch (error) {
+        console.error('Eroare la logout:', error);
         res.status(500).json({ success: false, message: 'User logout failed', error: error.message });
     }
 };
 
 export const login = async (req, res) => { 
     try {
-        console.log('login');
+        console.log('Attempting login...');
         const { email, password: userPassword } = req.body;
         const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ success: false, message: 'Invalid credentials' });
-        }
-        //console.log('exista ', user);
         
-        const isPasswordCorrect = await bcrypt.compare(userPassword, user.password);
-        if (!isPasswordCorrect) {
+        if (!user) {
+            console.log('User not found');
             return res.status(400).json({ success: false, message: 'Invalid credentials' });
         }
 
-        generateTokenAndSetCookie(user._id, res);
+        const isPasswordCorrect = await bcrypt.compare(userPassword, user.password);
+        if (!isPasswordCorrect) {
+            console.log('Password incorrect');
+            return res.status(400).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const token = generateTokenAndSetCookie(user._id, res);
+        console.log('Token generated and cookie set');
+        
         const { password, ...userWithoutPassword } = user.toObject();
-        res.status(200).json({ success: true, message: 'User logged in successfully', data: userWithoutPassword });
+
+        console.log('Cookies setate:', res.getHeaders()['set-cookie']);
+
+        res.status(200).json({ 
+            success: true,
+            message: 'User logged in successfully',
+            data: userWithoutPassword,
+            token: token
+         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ success: false, message: 'User retrieval failed', error: error.message });
     }
 };
 
 export const getUser = async (req, res) => {
     try {
+        console.log('GETUSER FUNCTION');
         const user = await User.findById(req.user.id).select('-password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });

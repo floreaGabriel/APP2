@@ -9,4 +9,5 @@ router.post('/login', login);
 router.post('/logout', logout); 
 router.get('/me', protectRoute, getUser);
 
+
 export default router;
